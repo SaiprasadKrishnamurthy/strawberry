@@ -1,0 +1,13 @@
+<configuration>
+    <logger name="org.apache.zookeeper">
+        <level value="debug"/>
+    </logger>
+
+    <logger name="backtype.storm">
+        <level value="debug"/>
+    </logger>
+
+    <logger name="com.netflix">
+        <level value="warn"/>
+    </logger>
+</configuration>

@@ -1,0 +1,27 @@
+{
+  "properties": {
+    "timestamp": {
+      "type": "date"
+    },
+    "dataId": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "vehicleReg": {
+      "type": "string",
+      "index": "not_analyzed"
+    },
+    "vehicleSpeedInKmph": {
+      "type": "long"
+    },
+    "vehicleMakeAndModel": {
+      "type": "string"
+    },
+    "vehicleMakeAndModel_Raw": {
+      "type": "string",
+      "index": "not_analyzed"
+    }
+  }
+}
