@@ -11,6 +11,7 @@ import java.util.Map;
 @Data
 public class EventStreamConfig {
     private String configId;
+    private String documentIdField;
     private List<String> dataTransformers;
     private List<String> prePersistenceCallback;
     private List<String> postPersistenceCallback;

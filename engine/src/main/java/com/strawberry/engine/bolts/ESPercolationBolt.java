@@ -1,6 +1,7 @@
 package com.strawberry.engine.bolts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -32,8 +33,10 @@ public class ESPercolationBolt extends BaseRichBolt {
         try {
             RestTemplate rt = new RestTemplate();
             ObjectMapper mapper = StrawberryConfigHolder.getJsonParser();
-            String topic = StrawberryConfigHolder.getEventStreamConfig().getConfigId();
             Map doc = (Map) tuple.getValueByField("doc");
+            EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValueByField("eventStreamConfig");
+            String topic = eventStreamConfig.getConfigId();
+
             List<String> matchedQueryNames = new ArrayList<>();
 
             // Percolate the query.
@@ -50,7 +53,7 @@ public class ESPercolationBolt extends BaseRichBolt {
                 String queryName = ((Map) percolationQueryObject.get("_source")).get("queryName").toString();
                 matchedQueryNames.add(queryName);
             }
-            outputCollector.emit(tuple, new Values(doc, matchedQueryNames));
+            outputCollector.emit(tuple, new Values(doc, matchedQueryNames, eventStreamConfig));
             outputCollector.ack(tuple);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -60,6 +63,6 @@ public class ESPercolationBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames"));
+        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames", "eventStreamConfig"));
     }
 }

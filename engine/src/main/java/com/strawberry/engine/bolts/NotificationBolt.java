@@ -2,6 +2,7 @@ package com.strawberry.engine.bolts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.ITopic;
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.storm.task.OutputCollector;
@@ -34,9 +35,11 @@ public class NotificationBolt extends BaseRichBolt {
         try {
             ObjectMapper mapper = StrawberryConfigHolder.getJsonParser();
             Map doc = (Map) tuple.getValueByField("doc");
+            EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValueByField("eventStreamConfig");
+
             List<String> matchedQueryNames = (List<String>) tuple.getValueByField("matchedQueryNames");
             for (String matchedQueryName : matchedQueryNames) {
-                if (StrawberryConfigHolder.getEventStreamConfig().isDurableNotification()) {
+                if (eventStreamConfig.isDurableNotification()) {
                     // Goes to a Kafka Topic.
                     StrawberryConfigHolder.getKafkaProducer().send(new ProducerRecord<>(matchedQueryName, mapper.writeValueAsString(doc)));
                 } else {
@@ -45,7 +48,7 @@ public class NotificationBolt extends BaseRichBolt {
                     topic.publish(mapper.writeValueAsString(doc));
                 }
             }
-            outputCollector.emit(tuple, new Values(doc, matchedQueryNames));
+            outputCollector.emit(tuple, new Values(doc, matchedQueryNames, eventStreamConfig));
             outputCollector.ack(tuple);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -55,6 +58,6 @@ public class NotificationBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames"));
+        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames", "eventStreamConfig"));
     }
 }

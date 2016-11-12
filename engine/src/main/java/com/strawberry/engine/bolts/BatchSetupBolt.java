@@ -1,5 +1,6 @@
 package com.strawberry.engine.bolts;
 
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -29,16 +30,18 @@ public class BatchSetupBolt extends BaseRichBolt {
     @Override
     public void execute(final Tuple tuple) {
         try {
-            String topic = StrawberryConfigHolder.getEventStreamConfig().getConfigId();
             Map doc = (Map) tuple.getValueByField("doc");
-            if (StrawberryConfigHolder.getEventStreamConfig().getBatchQueryConfig() != null) {
+            EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValueByField("eventStreamConfig");
+            String topic = eventStreamConfig.getConfigId();
+
+            if (eventStreamConfig.getBatchQueryConfig() != null) {
                 if (!StrawberryConfigHolder.getMongoTemplateForBatch().collectionExists(topic)) {
-                    CollectionOptions options = new CollectionOptions(StrawberryConfigHolder.getEventStreamConfig().getBatchQueryConfig().getMaxBatchSizeInBytes(), StrawberryConfigHolder.getEventStreamConfig().getBatchQueryConfig().getMaxNumberOfDocs(), true);
+                    CollectionOptions options = new CollectionOptions(eventStreamConfig.getBatchQueryConfig().getMaxBatchSizeInBytes(), eventStreamConfig.getBatchQueryConfig().getMaxNumberOfDocs(), true);
                     StrawberryConfigHolder.getMongoTemplateForBatch().createCollection(topic, options);
                 }
                 StrawberryConfigHolder.getMongoTemplateForBatch().save(doc, topic);
             } else {
-                outputCollector.emit(tuple, new Values(doc));
+                outputCollector.emit(tuple, new Values(doc, eventStreamConfig));
             }
             outputCollector.ack(tuple);
         } catch (Exception ex) {
@@ -48,6 +51,6 @@ public class BatchSetupBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames"));
+        outputFieldsDeclarer.declare(new Fields("doc", "eventStreamConfig"));
     }
 }

@@ -1,5 +1,6 @@
 package com.strawberry.engine.bolts;
 
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.storm.task.OutputCollector;
@@ -29,10 +30,13 @@ public class PersistenceBolt extends BaseRichBolt {
     @Override
     public void execute(final Tuple tuple) {
         try {
-            String topic = StrawberryConfigHolder.getEventStreamConfig().getConfigId();
             Map doc = (Map) tuple.getValueByField("doc");
-            if (StrawberryConfigHolder.getEventStreamConfig().isPersistEvent()) {
+            EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValueByField("eventStreamConfig");
+            String topic = eventStreamConfig.getConfigId();
+
+            if (eventStreamConfig.isPersistEvent()) {
                 StrawberryConfigHolder.getMongoTemplate().save(doc, topic);
+                // inject the natural id in the doc for indexing in ES.
                 StrawberryConfigHolder.getKafkaProducer().send(new ProducerRecord<>(StrawberryConfigHolder.getEsInputTopicName(), StrawberryConfigHolder.getJsonParser().writeValueAsString(doc)));
             } else {
                 outputCollector.emit(tuple, new Values(doc));
@@ -45,6 +49,6 @@ public class PersistenceBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames"));
+        outputFieldsDeclarer.declare(new Fields("doc", "matchedQueryNames", "eventStreamConfig"));
     }
 }

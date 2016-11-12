@@ -1,6 +1,6 @@
 package com.strawberry.engine.bolts;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -29,10 +29,13 @@ public class FieldsExtractorBolt extends BaseRichBolt {
     @Override
     public void execute(final Tuple tuple) {
         try {
-            Map doc = new ObjectMapper().readValue(tuple.getValue(0).toString(), Map.class);
-            doc.put("__configId__", StrawberryConfigHolder.getEventStreamConfig().getConfigId());
+            Map raw = StrawberryConfigHolder.getJsonParser().readValue(tuple.getValue(0).toString(), Map.class);
+            Map doc = (Map) raw.get("payload");
+            EventStreamConfig eventStreamConfig = StrawberryConfigHolder.getJsonParser().convertValue(raw.get("eventStreamConfig"), EventStreamConfig.class);
+            doc.put("__configId__", eventStreamConfig.getConfigId());
+            doc.put("__naturalId__", doc.get(eventStreamConfig.getDocumentIdField()));
             System.out.println(boltId + " - Tuple Reached in the router bolt: " + doc);
-            outputCollector.emit(tuple, new Values(doc));
+            outputCollector.emit(tuple, new Values(doc,eventStreamConfig));
             outputCollector.ack(tuple);
         } catch (Exception ex) {
             outputCollector.reportError(ex);
@@ -41,6 +44,6 @@ public class FieldsExtractorBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc"));
+        outputFieldsDeclarer.declare(new Fields("doc", "eventStreamConfig"));
     }
 }

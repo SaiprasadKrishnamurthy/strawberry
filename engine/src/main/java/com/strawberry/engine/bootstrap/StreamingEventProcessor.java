@@ -78,9 +78,6 @@ public class StreamingEventProcessor {
         JestClient client = factory.getObject();
         StrawberryConfigHolder.setJestClient(client);
 
-        // Stream config lookup.
-        StrawberryConfigHolder.initStreamConfig(instance.configid);
-
         // Zookeeper.
         ZkHosts zookeeperHosts = new ZkHosts(StrawberryConfigHolder.getZookeeperUrls());
 

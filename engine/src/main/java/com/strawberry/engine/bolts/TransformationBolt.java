@@ -1,6 +1,7 @@
 package com.strawberry.engine.bolts;
 
 import com.sai.strawberry.api.DataTransformer;
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -31,8 +32,9 @@ public class TransformationBolt extends BaseRichBolt {
     public void execute(final Tuple tuple) {
         try {
             Map doc = (Map) tuple.getValue(0);
+            EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValue(1);
             System.out.println(boltId + " - Tuple Reached in the transformer bolt: " + doc);
-            List<String> configuredTransformers = StrawberryConfigHolder.getEventStreamConfig().getDataTransformers();
+            List<String> configuredTransformers = eventStreamConfig.getDataTransformers();
             if (configuredTransformers != null) {
                 String currDoc = StrawberryConfigHolder.getJsonParser().writeValueAsString(doc);
                 for (String dataTransformer : configuredTransformers) {
@@ -40,7 +42,7 @@ public class TransformationBolt extends BaseRichBolt {
                     currDoc = jsonOut;
                 }
             }
-            outputCollector.emit(tuple, new Values(doc));
+            outputCollector.emit(tuple, new Values(doc, eventStreamConfig));
             outputCollector.ack(tuple);
         } catch (Exception ex) {
             outputCollector.reportError(ex);
@@ -55,6 +57,6 @@ public class TransformationBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc"));
+        outputFieldsDeclarer.declare(new Fields("doc", "eventStreamConfig"));
     }
 }

@@ -1,6 +1,7 @@
 package com.strawberry.engine.bolts;
 
 import com.sai.strawberry.api.BatchQueryProcessor;
+import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -30,12 +31,14 @@ public class BatchQueryBolt extends BaseRichBolt {
     public void execute(final Tuple tuple) {
         try {
             Map doc = (Map) tuple.getValue(0);
-            if (StrawberryConfigHolder.getEventStreamConfig().getBatchQueryConfig() != null) {
+            EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValueByField("eventStreamConfig");
+
+            if (eventStreamConfig.getBatchQueryConfig() != null) {
                 String currDoc = StrawberryConfigHolder.getJsonParser().writeValueAsString(doc);
-                String jsonOut = invoke(StrawberryConfigHolder.getEventStreamConfig().getBatchQueryConfig().getBatchQueryProcessor(), currDoc);
-                outputCollector.emit(tuple, new Values(jsonOut));
+                String jsonOut = invoke(eventStreamConfig.getBatchQueryConfig().getBatchQueryProcessor(), currDoc);
+                outputCollector.emit(tuple, new Values(jsonOut, eventStreamConfig));
             } else {
-                outputCollector.emit(tuple, new Values(doc));
+                outputCollector.emit(tuple, new Values(doc, eventStreamConfig));
             }
             outputCollector.ack(tuple);
         } catch (Exception ex) {
@@ -51,6 +54,6 @@ public class BatchQueryBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc"));
+        outputFieldsDeclarer.declare(new Fields("doc", "eventStreamConfig"));
     }
 }

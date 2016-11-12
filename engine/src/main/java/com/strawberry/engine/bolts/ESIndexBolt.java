@@ -35,6 +35,7 @@ public class ESIndexBolt extends BaseRichBolt {
     public void execute(final Tuple tuple) {
         try {
             Map doc = StrawberryConfigHolder.getJsonParser().readValue(tuple.getValue(0).toString(), Map.class);
+
             payloadsTobeIndexedToEs.add(doc);
             if (payloadsTobeIndexedToEs.size() > StrawberryConfigHolder.getEsIndexBatchSize()) {
                 Lock lock = StrawberryConfigHolder.lockForEsIndexing();
@@ -42,7 +43,7 @@ public class ESIndexBolt extends BaseRichBolt {
                     lock.lock();
                     Bulk.Builder bulkBuilder = new Bulk.Builder();
                     for (Map payloadDoc : payloadsTobeIndexedToEs) {
-                        Index index = new Index.Builder(payloadDoc).index(payloadDoc.get("__configId__").toString()).type(payloadDoc.get("__configId__").toString()).id(payloadDoc.get("dataId").toString()).build();
+                        Index index = new Index.Builder(payloadDoc).index(payloadDoc.get("__configId__").toString()).type(payloadDoc.get("__configId__").toString()).id(payloadDoc.get("__naturalId__").toString()).build();
                         bulkBuilder.addAction(index);
                     }
                     StrawberryConfigHolder.getJestClient().execute(bulkBuilder.build());
@@ -60,6 +61,6 @@ public class ESIndexBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(final OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("doc"));
+        outputFieldsDeclarer.declare(new Fields("doc", "eventStreamConfig"));
     }
 }

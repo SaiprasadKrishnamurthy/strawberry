@@ -1,15 +1,16 @@
 {
-  "configId": "vehicle-camera-sensor-events",
+  "configId": "vehicle-camera-sensor-stream",
   "durableNotification": true,
+  "documentIdField": "dataId",
   "watchQueries": {
-    "vehicle-camera-sensor-events-nh45": {
+    "vehicle-camera-sensor-stream-nh45": {
       "query": {
         "match": {
           "location": "NH45,Clockwise"
         }
       }
     },
-    "vehicle-camera-sensor-events-nh": {
+    "vehicle-camera-sensor-stream-nh": {
       "query": {
         "match": {
           "location": "NH45,Clockwise"

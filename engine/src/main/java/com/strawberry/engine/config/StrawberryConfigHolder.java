@@ -14,8 +14,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 
 import java.io.FileInputStream;
 import java.util.HashMap;
@@ -35,7 +33,6 @@ public final class StrawberryConfigHolder {
     private static KafkaProducer<String, String> kafkaProducer;
     private static MongoTemplate mongoTemplate;
     private static MongoTemplate mongoTemplateForBatch;
-    private static EventStreamConfig eventStreamConfig;
     private static ObjectMapper JSONSERIALIZER = new ObjectMapper();
     private static HazelcastInstance instance;
 
@@ -109,10 +106,6 @@ public final class StrawberryConfigHolder {
         return mongoTemplateForBatch;
     }
 
-    public static EventStreamConfig getEventStreamConfig() {
-        return eventStreamConfig;
-    }
-
     public static String getZookeeperUrls() {
         return _props.get("zookeeperUrls").toString();
     }
@@ -133,12 +126,6 @@ public final class StrawberryConfigHolder {
         MongoClient mongoClient = new MongoClient(mongoHost, Integer.parseInt(mongoDbPort.trim()));
         MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(mongoClient, mongoDbName);
         mongoTemplateForBatch = new MongoTemplate(mongoDbFactory);
-    }
-
-    public static void initStreamConfig(final String id) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("configId").is(id));
-        eventStreamConfig = mongoTemplate.find(query, EventStreamConfig.class).get(0);
     }
 
     public static String getEsInputTopicName() {
