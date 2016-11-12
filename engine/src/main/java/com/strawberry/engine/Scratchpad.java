@@ -1,16 +1,11 @@
 package com.strawberry.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sai.strawberry.api.BatchQueryConfig;
-import com.sai.strawberry.api.EventStreamConfig;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by saipkri on 11/11/16.
@@ -40,7 +35,7 @@ public class Scratchpad {
         StrawberryConfigHolder.initStreamConfig("vehicle-camera-sensor-events");
         System.out.println(StrawberryConfigHolder.getEventStreamConfig());*/
 
-        for(int i=0; i<100; i++) {
+        for (int i = 0; i < 100; i++) {
             StrawberryConfigHolder.getKafkaProducer().send(new ProducerRecord<>("vehicle-camera-sensor-events", IOUtils.toString(new FileInputStream("/Users/saipkri/learning/strawberry/engine/src/main/resources/vehicle-camera-feed.json"))));
         }
     }
