@@ -1,6 +1,5 @@
 package com.strawberry.engine.bolts;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import io.searchbox.core.Bulk;
 import io.searchbox.core.Index;
@@ -35,7 +34,7 @@ public class ESIndexBolt extends BaseRichBolt {
     @Override
     public void execute(final Tuple tuple) {
         try {
-            Map doc = new ObjectMapper().readValue(tuple.getValue(0).toString(), Map.class);
+            Map doc = StrawberryConfigHolder.getJsonParser().readValue(tuple.getValue(0).toString(), Map.class);
             payloadsTobeIndexedToEs.add(doc);
             if (payloadsTobeIndexedToEs.size() > StrawberryConfigHolder.getEsIndexBatchSize()) {
                 Lock lock = StrawberryConfigHolder.lockForEsIndexing();

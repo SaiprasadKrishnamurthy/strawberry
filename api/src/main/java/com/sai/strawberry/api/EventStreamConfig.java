@@ -21,4 +21,5 @@ public class EventStreamConfig {
     private Map<String, Map<String, Object>> watchQueries;
     private boolean persistEvent;
     private boolean enableVisualization;
+    private BatchQueryConfig batchQueryConfig;
 }

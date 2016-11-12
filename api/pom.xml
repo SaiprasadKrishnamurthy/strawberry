@@ -18,6 +18,12 @@
             <version>1.16.6</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <version>1.9.5.RELEASE</version>
+        </dependency>
     </dependencies>
 
 

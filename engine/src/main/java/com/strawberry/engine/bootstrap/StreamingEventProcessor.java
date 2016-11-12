@@ -49,6 +49,7 @@ public class StreamingEventProcessor {
         builder.setBolt("TransformationBolt", new TransformationBolt(), parallelism).shuffleGrouping("FieldsExtractorBolt");
         builder.setBolt("ESPercolationBolt", new ESPercolationBolt(), parallelism).shuffleGrouping("TransformationBolt");
         builder.setBolt("PersistenceBolt", new PersistenceBolt(), parallelism).shuffleGrouping("TransformationBolt");
+        builder.setBolt("BatchSetupBolt", new BatchSetupBolt(), parallelism).shuffleGrouping("TransformationBolt");
         builder.setBolt("NotificationBolt", new NotificationBolt(), parallelism).shuffleGrouping("ESPercolationBolt");
 
         // Spout that listens from ES input and indexes the data to ES.
@@ -75,9 +76,6 @@ public class StreamingEventProcessor {
                 .build());
         JestClient client = factory.getObject();
         StrawberryConfigHolder.setJestClient(client);
-
-        // Mongo related configs.
-        StrawberryConfigHolder.initMongo();
 
         // Stream config lookup.
         StrawberryConfigHolder.initStreamConfig(instance.configid);

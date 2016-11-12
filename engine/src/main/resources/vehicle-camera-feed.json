@@ -1,9 +1,9 @@
 {
-  "dataId": "1",
+  "dataId": "3",
   "location": "NH45,Clockwise",
   "cameraSequence": 1,
   "timestamp": "2016-10-28T06:40",
-  "vehicleReg": "TN-01-14871",
-  "vehicleSpeedInKmph": 67,
-  "vehicleMakeAndModel": "BMW 5 Series"
+  "vehicleReg": "TN-11-9669",
+  "vehicleSpeedInKmph": 87,
+  "vehicleMakeAndModel": "Audi A6"
 }

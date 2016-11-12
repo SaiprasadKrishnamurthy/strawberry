@@ -34,6 +34,7 @@ public final class StrawberryConfigHolder {
     private static Properties _props = new Properties();
     private static KafkaProducer<String, String> kafkaProducer;
     private static MongoTemplate mongoTemplate;
+    private static MongoTemplate mongoTemplateForBatch;
     private static EventStreamConfig eventStreamConfig;
     private static ObjectMapper JSONSERIALIZER = new ObjectMapper();
     private static HazelcastInstance instance;
@@ -42,6 +43,8 @@ public final class StrawberryConfigHolder {
         try {
             _props.load(new FileInputStream(propertiesFileLocation));
             initKafkaProducer();
+            initMongo();
+            initMongoForBatch();
             initHazelcast();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -102,6 +105,10 @@ public final class StrawberryConfigHolder {
         return mongoTemplate;
     }
 
+    public static MongoTemplate getMongoTemplateForBatch() {
+        return mongoTemplateForBatch;
+    }
+
     public static EventStreamConfig getEventStreamConfig() {
         return eventStreamConfig;
     }
@@ -117,6 +124,15 @@ public final class StrawberryConfigHolder {
         MongoClient mongoClient = new MongoClient(mongoHost, Integer.parseInt(mongoDbPort.trim()));
         MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(mongoClient, mongoDbName);
         mongoTemplate = new MongoTemplate(mongoDbFactory);
+    }
+
+    public static void initMongoForBatch() throws Exception {
+        String mongoHost = _props.get("mongoHost").toString();
+        String mongoDbPort = _props.get("mongoPort").toString();
+        String mongoDbName = _props.get("mongoDbForBatch").toString();
+        MongoClient mongoClient = new MongoClient(mongoHost, Integer.parseInt(mongoDbPort.trim()));
+        MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(mongoClient, mongoDbName);
+        mongoTemplateForBatch = new MongoTemplate(mongoDbFactory);
     }
 
     public static void initStreamConfig(final String id) {
@@ -136,6 +152,7 @@ public final class StrawberryConfigHolder {
     public static HazelcastInstance hazelcastInstance() {
         return instance;
     }
+
     public static Lock lockForEsIndexing() {
         return new ReentrantLock(true);
     }
