@@ -14,4 +14,7 @@ public class AppProperties {
     private String esUrl;
     private int concurrencyFactor;
     private String kafkaBrokersCsv;
+    private String mongoHost;
+    private int mongoPort;
+    private String mongoDb;
 }

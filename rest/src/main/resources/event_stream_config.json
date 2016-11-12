@@ -1,0 +1,53 @@
+{
+  "configId": "vehicle-camera-sensor-events",
+  "durableNotification": true,
+  "watchQueries": {
+    "vehicle-camera-sensor-events-nh45": {
+      "query": {
+        "match": {
+          "location": "NH45,Clockwise"
+        }
+      }
+    },
+    "vehicle-camera-sensor-events-nh": {
+      "query": {
+        "match": {
+          "location": "NH45,Clockwise"
+        }
+      }
+    }
+  },
+  "indexDefinition": {
+    "properties": {
+      "timestamp": {
+        "type": "date"
+      },
+      "dataId": {
+        "type": "string"
+      },
+      "location": {
+        "type": "string"
+      },
+      "vehicleReg": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "vehicleSpeedInKmph": {
+        "type": "long"
+      },
+      "vehicleMakeAndModel": {
+        "type": "string"
+      },
+      "vehicleMakeAndModel_Raw": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  },
+  "persistEvent": true,
+  "enableVisualization": true,
+  "batchQueryConfig": {
+    "maxNumberOfDocs": 49,
+    "maxBatchSizeInBytes": 2147483647
+  }
+}

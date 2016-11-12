@@ -3,12 +3,10 @@ package com.sai.strawberry.micro.actor;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.dispatch.OnComplete;
-import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sai.strawberry.micro.config.ActorFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import com.sai.strawberry.micro.model.StreamingSearchConfig;
 import scala.concurrent.Future;
 
 import java.util.HashMap;
@@ -37,7 +35,7 @@ public class KafkaProducerActor extends UntypedActor {
     public void onReceive(final Object message) throws Throwable {
         if (message instanceof Map) {
             ActorRef repositoryActor = actorFactory.newActor(RepositoryActor.class);
-            Future<Object> allConfigsFuture = Patterns.ask(repositoryActor, StreamingSearchConfig.class, RepositoryActor.timeout_in_seconds);
+            Future<Object> allConfigsFuture = null;//Patterns.ask(repositoryActor, StreamingSearchConfig.class, RepositoryActor.timeout_in_seconds);
             allConfigsFuture.onComplete(new OnComplete<Object>() {
                 @Override
                 public void onComplete(Throwable failure, Object success) throws Throwable {

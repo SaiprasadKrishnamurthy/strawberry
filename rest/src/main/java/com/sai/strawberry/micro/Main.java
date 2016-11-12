@@ -2,11 +2,12 @@ package com.sai.strawberry.micro;
 
 import akka.actor.ActorSystem;
 import com.google.common.base.Predicates;
+import com.mongodb.MongoClient;
 import com.sai.strawberry.micro.config.ActorFactory;
 import com.sai.strawberry.micro.config.AppProperties;
+import com.sai.strawberry.micro.es.ESFacade;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import com.sai.strawberry.micro.es.ESFacade;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.scheduling.annotation.EnableAsync;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -52,12 +56,19 @@ public class Main {
 
     @Bean
     public ActorFactory actorFactory() throws Exception {
-        return new ActorFactory(actorSystem(), appProperties, kafkaProducer(), esinit());
+        return new ActorFactory(actorSystem(), appProperties, kafkaProducer(), esinit(), mongoTemplate());
     }
 
     @Bean
     public ESFacade esinit() throws Exception {
         return new ESFacade(appProperties);
+    }
+
+    @Bean
+    public MongoTemplate mongoTemplate() {
+        MongoClient mongoClient = new MongoClient(appProperties.getMongoHost(), appProperties.getMongoPort());
+        MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(mongoClient, appProperties.getMongoDb());
+        return new MongoTemplate(mongoDbFactory);
     }
 
     @Bean
@@ -96,7 +107,7 @@ public class Main {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Realtime Data Streams REST API")
+                .title("Strawberry REST API")
                 .contact("sai@concordesearch.co.uk")
                 .version("1.0")
                 .build();

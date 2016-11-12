@@ -5,10 +5,11 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.routing.RoundRobinPool;
 import com.sai.strawberry.micro.actor.ESActor;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import com.sai.strawberry.micro.actor.KafkaProducerActor;
 import com.sai.strawberry.micro.actor.RepositoryActor;
 import com.sai.strawberry.micro.es.ESFacade;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import scala.concurrent.ExecutionContext;
 
 import java.util.HashMap;
@@ -26,14 +27,14 @@ public class ActorFactory {
     private final ESFacade esFacade;
 
 
-    public ActorFactory(final ActorSystem actorSystem, final AppProperties appProperties, final KafkaProducer<String, String> kafkaTemplate, final ESFacade esFacade) {
+    public ActorFactory(final ActorSystem actorSystem, final AppProperties appProperties, final KafkaProducer<String, String> kafkaTemplate, final ESFacade esFacade, final MongoTemplate mongoTemplate) {
         this.actorSystem = actorSystem;
         this.appProperties = appProperties;
         this.esFacade = esFacade;
         // Create the actor pool.
         actors.put(KafkaProducerActor.class.getName(), actorSystem.actorOf(Props.create(KafkaProducerActor.class, kafkaTemplate, this).withRouter(new RoundRobinPool(appProperties.getConcurrencyFactor()))));
-        actors.put(RepositoryActor.class.getName(), actorSystem.actorOf(Props.create(RepositoryActor.class).withRouter(new RoundRobinPool(appProperties.getConcurrencyFactor()))));
-        actors.put(ESActor.class.getName(), actorSystem.actorOf(Props.create(ESActor.class, this, esFacade).withRouter(new RoundRobinPool(appProperties.getConcurrencyFactor()))));
+        actors.put(RepositoryActor.class.getName(), actorSystem.actorOf(Props.create(RepositoryActor.class, mongoTemplate, this).withRouter(new RoundRobinPool(appProperties.getConcurrencyFactor()))));
+        actors.put(ESActor.class.getName(), actorSystem.actorOf(Props.create(ESActor.class, esFacade).withRouter(new RoundRobinPool(appProperties.getConcurrencyFactor()))));
     }
 
     public <T> ActorRef newActor(final Class<T> actorType) {
