@@ -50,6 +50,7 @@ public class StreamingEventProcessor {
         builder.setBolt("ESPercolationBolt", new ESPercolationBolt(), parallelism).shuffleGrouping("TransformationBolt");
         builder.setBolt("PersistenceBolt", new PersistenceBolt(), parallelism).shuffleGrouping("TransformationBolt");
         builder.setBolt("BatchSetupBolt", new BatchSetupBolt(), parallelism).shuffleGrouping("TransformationBolt");
+        builder.setBolt("BatchQueryBolt", new BatchQueryBolt(), parallelism).shuffleGrouping("BatchSetupBolt");
         builder.setBolt("NotificationBolt", new NotificationBolt(), parallelism).shuffleGrouping("ESPercolationBolt");
 
         // Spout that listens from ES input and indexes the data to ES.
