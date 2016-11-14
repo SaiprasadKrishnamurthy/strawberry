@@ -2,6 +2,7 @@
   "configId": "vehicle-camera-sensor-stream",
   "durableNotification": true,
   "documentIdField": "dataId",
+  "documentIdField": "dataId",
   "watchQueries": {
     "vehicle-camera-sensor-stream-nh45": {
       "query": {

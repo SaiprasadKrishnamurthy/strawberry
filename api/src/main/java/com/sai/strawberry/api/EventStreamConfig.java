@@ -12,6 +12,8 @@ import java.util.Map;
 public class EventStreamConfig {
     private String configId;
     private String documentIdField;
+    private boolean cacheEnabled;
+    private String cacheHandlerClass;
     private List<String> dataTransformers;
     private List<String> prePersistenceCallback;
     private List<String> postPersistenceCallback;

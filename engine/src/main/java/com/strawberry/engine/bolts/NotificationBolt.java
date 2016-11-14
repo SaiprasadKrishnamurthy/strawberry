@@ -23,7 +23,6 @@ public class NotificationBolt extends BaseRichBolt {
     private OutputCollector outputCollector;
     private int boltId;
 
-
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
