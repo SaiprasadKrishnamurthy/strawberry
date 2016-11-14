@@ -15,10 +15,10 @@ public class EventStreamConfig {
     private boolean cacheEnabled;
     private String cacheHandlerClass;
     private List<String> dataTransformers;
-    private List<String> prePersistenceCallback;
-    private List<String> postPersistenceCallback;
-    private List<String> preNotificationCallback;
-    private List<String> postNotificationCallback;
+    private String prePersistenceCallback;
+    private String postPersistenceCallback;
+    private String preNotificationCallback;
+    private String postNotificationCallback;
     private boolean durableNotification;
     private Map<String, Object> indexDefinition;
     private Map<String, Map<String, Object>> watchQueries;
