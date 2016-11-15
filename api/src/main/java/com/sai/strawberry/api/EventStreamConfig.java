@@ -15,6 +15,7 @@ public class EventStreamConfig {
     private boolean cacheEnabled;
     private String cacheHandlerClass;
     private List<String> dataTransformers;
+    private List<String> streamingStatisticalOperationHandlers;
     private String prePersistenceCallback;
     private String postPersistenceCallback;
     private String preNotificationCallback;

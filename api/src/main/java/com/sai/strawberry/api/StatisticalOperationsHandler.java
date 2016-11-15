@@ -10,4 +10,5 @@ public interface StatisticalOperationsHandler {
     String getName();
     Number getValueToRecord(Map<String, Object> payload);
     List<StatisticalOperationsResut> apply(Stats statsWrapper);
+    boolean reset(Stats statsWrapper);
 }
