@@ -35,7 +35,6 @@ public class ESIndexBolt extends BaseRichBolt {
     public void execute(final Tuple tuple) {
         try {
             Map doc = StrawberryConfigHolder.getJsonParser().readValue(tuple.getValue(0).toString(), Map.class);
-
             payloadsTobeIndexedToEs.add(doc);
             if (payloadsTobeIndexedToEs.size() > StrawberryConfigHolder.getEsIndexBatchSize()) {
                 Lock lock = StrawberryConfigHolder.lockForEsIndexing();
@@ -47,6 +46,7 @@ public class ESIndexBolt extends BaseRichBolt {
                         bulkBuilder.addAction(index);
                     }
                     StrawberryConfigHolder.getJestClient().execute(bulkBuilder.build());
+                    System.out.println("\t\t Indexed -- ");
                     payloadsTobeIndexedToEs.clear();
                 } finally {
                     lock.unlock();
