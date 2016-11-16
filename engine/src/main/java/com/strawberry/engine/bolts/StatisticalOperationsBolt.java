@@ -1,7 +1,9 @@
 package com.strawberry.engine.bolts;
 
-import com.sai.strawberry.api.DataTransformer;
 import com.sai.strawberry.api.EventStreamConfig;
+import com.sai.strawberry.api.StatisticalOperationsHandler;
+import com.sai.strawberry.api.StatisticalOperationsResut;
+import com.sai.strawberry.api.Stats;
 import com.strawberry.engine.config.StrawberryConfigHolder;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -11,6 +13,8 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,13 +37,14 @@ public class StatisticalOperationsBolt extends BaseRichBolt {
         try {
             Map doc = (Map) tuple.getValue(0);
             EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValue(1);
-            System.out.println(boltId + " - Tuple Reached in the transformer bolt: " + doc);
-            List<String> configuredTransformers = eventStreamConfig.getDataTransformers();
-            if (configuredTransformers != null) {
-                String currDoc = StrawberryConfigHolder.getJsonParser().writeValueAsString(doc);
-                for (String dataTransformer : configuredTransformers) {
-                    String jsonOut = invoke(dataTransformer, currDoc);
-                    currDoc = jsonOut;
+            System.out.println(boltId + " - Tuple Reached in the Stats Handler bolt: " + doc);
+            List<String> configuredStatisticalOpsHandlers = eventStreamConfig.getStreamingStatisticalOperationHandlers();
+            Map<String, List<StatisticalOperationsResut>> statResults = new HashMap<>();
+            if (configuredStatisticalOpsHandlers != null && !configuredStatisticalOpsHandlers.isEmpty()) {
+                for (String statsOperation : configuredStatisticalOpsHandlers) {
+                    StatisticalOperationsHandler statisticalOperationsHandler = getStatisticalOperationsHandler(statsOperation);
+                    List<StatisticalOperationsResut> jsonOut = invoke(statisticalOperationsHandler, doc, eventStreamConfig.getConfigId());
+                    statResults.put(statisticalOperationsHandler.getName(), jsonOut);
                 }
             }
             outputCollector.emit(tuple, new Values(doc, eventStreamConfig));
@@ -49,10 +54,21 @@ public class StatisticalOperationsBolt extends BaseRichBolt {
         }
     }
 
-    private String invoke(final String dataTransformer, final String jsonIn) throws Exception {
-        Class<DataTransformer> clazz = (Class<DataTransformer>) Class.forName(dataTransformer);
-        DataTransformer transformer = clazz.newInstance();
-        return transformer.transform(jsonIn);
+    private List<StatisticalOperationsResut> invoke(final StatisticalOperationsHandler transformer, final Map doc, String configId) throws Exception {
+        Map<String, Object> statsCache = StrawberryConfigHolder.hazelcastInstance().getMap(configId);
+        Stats stats = (Stats) statsCache.compute(transformer.getName(), (k, v) -> v == null ? new Stats(2) : v);
+        stats.recordValue(transformer.getValueToRecord(doc).longValue());
+        if (transformer.reset(stats)) {
+            stats.reset();
+            return Collections.emptyList();
+        } else {
+            return transformer.apply(stats);
+        }
+    }
+
+    private StatisticalOperationsHandler getStatisticalOperationsHandler(final String statsOpHandler) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        Class<StatisticalOperationsHandler> clazz = (Class<StatisticalOperationsHandler>) Class.forName(statsOpHandler);
+        return clazz.newInstance();
     }
 
     @Override

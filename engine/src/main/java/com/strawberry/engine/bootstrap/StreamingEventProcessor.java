@@ -47,6 +47,7 @@ public class StreamingEventProcessor {
         builder.setSpout("KafkaSpout", new KafkaSpout(kafkaConfig), parallelism);
         builder.setBolt("FieldsExtractorBolt", new FieldsExtractorBolt(), parallelism).shuffleGrouping("KafkaSpout");
         builder.setBolt("TransformationBolt", new TransformationBolt(), parallelism).shuffleGrouping("FieldsExtractorBolt");
+//        builder.setBolt("StatisticalOperationsBolt", new StatisticalOperationsBolt(), parallelism).shuffleGrouping("StatisticalOperationsBolt");
         builder.setBolt("CacheHandlerBolt", new CacheHandlerBolt(), parallelism).shuffleGrouping("TransformationBolt");
         builder.setBolt("ESPercolationBolt", new ESPercolationBolt(), parallelism).shuffleGrouping("TransformationBolt");
         builder.setBolt("PersistenceBolt", new PersistenceBolt(), parallelism).shuffleGrouping("TransformationBolt");
