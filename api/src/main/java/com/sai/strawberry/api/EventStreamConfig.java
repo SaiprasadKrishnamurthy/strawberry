@@ -13,13 +13,7 @@ public class EventStreamConfig {
     private String configId;
     private String documentIdField;
     private boolean cacheEnabled;
-    private String cacheHandlerClass;
-    private List<String> dataTransformers;
-    private List<String> streamingStatisticalOperationHandlers;
-    private String prePersistenceCallback;
-    private String postPersistenceCallback;
-    private String preNotificationCallback;
-    private String postNotificationCallback;
+    private String customProcessingHookClassName;
     private boolean durableNotification;
     private Map<String, Object> indexDefinition;
     private Map<String, Map<String, Object>> watchQueries;

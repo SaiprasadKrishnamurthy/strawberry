@@ -9,5 +9,4 @@ import lombok.Data;
 public class BatchQueryConfig {
     private int maxNumberOfDocs;
     private int maxBatchSizeInBytes;
-    private String batchQueryProcessor;
 }

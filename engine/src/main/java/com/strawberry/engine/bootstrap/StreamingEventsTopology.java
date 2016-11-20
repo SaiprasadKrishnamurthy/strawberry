@@ -23,7 +23,7 @@ import java.util.UUID;
 /**
  * Created by saipkri on 11/11/16.
  */
-public class StreamingEventProcessor {
+public class StreamingEventsTopology {
 
     @Option(name = "-h", aliases = "-help", usage = "print this message")
     private boolean help = false;
@@ -46,13 +46,13 @@ public class StreamingEventProcessor {
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("KafkaSpout", new KafkaSpout(kafkaConfig), parallelism);
         builder.setBolt("FieldsExtractorBolt", new FieldsExtractorBolt(), parallelism).shuffleGrouping("KafkaSpout");
-        builder.setBolt("TransformationBolt", new TransformationBolt(), parallelism).shuffleGrouping("FieldsExtractorBolt");
-//        builder.setBolt("StatisticalOperationsBolt", new StatisticalOperationsBolt(), parallelism).shuffleGrouping("StatisticalOperationsBolt");
-        builder.setBolt("CacheHandlerBolt", new CacheHandlerBolt(), parallelism).shuffleGrouping("TransformationBolt");
-        builder.setBolt("ESPercolationBolt", new ESPercolationBolt(), parallelism).shuffleGrouping("TransformationBolt");
-        builder.setBolt("PersistenceBolt", new PersistenceBolt(), parallelism).shuffleGrouping("TransformationBolt");
-        builder.setBolt("BatchSetupBolt", new BatchSetupBolt(), parallelism).shuffleGrouping("TransformationBolt");
-        builder.setBolt("BatchQueryBolt", new BatchQueryBolt(), parallelism).shuffleGrouping("BatchSetupBolt");
+        builder.setBolt("PersistenceBolt", new PersistenceBolt(), parallelism).shuffleGrouping("FieldsExtractorBolt");
+
+
+        builder.setBolt("BatchSetupBolt", new BatchSetupBolt(), parallelism).shuffleGrouping("FieldsExtractorBolt");
+        builder.setBolt("CustomProcessorHooksBolt", new CustomProcessorHooksBolt(), parallelism).shuffleGrouping("BatchSetupBolt");
+        builder.setBolt("CacheHandlerBolt", new CacheHandlerBolt(), parallelism).shuffleGrouping("CustomProcessorHooksBolt");
+        builder.setBolt("ESPercolationBolt", new ESPercolationBolt(), parallelism).shuffleGrouping("CustomProcessorHooksBolt");
         builder.setBolt("NotificationBolt", new NotificationBolt(), parallelism).shuffleGrouping("ESPercolationBolt");
 
         // Spout that listens from ES input and indexes the data to ES.
@@ -66,7 +66,7 @@ public class StreamingEventProcessor {
 
     public static void main(String[] args) throws Exception {
 
-        StreamingEventProcessor instance = new StreamingEventProcessor();
+        StreamingEventsTopology instance = new StreamingEventsTopology();
         validateCommandlineArgs(args, instance);
         StrawberryConfigHolder.init(instance.propsFileLocation);
 
@@ -108,7 +108,7 @@ public class StreamingEventProcessor {
         }
     }
 
-    private static void validateCommandlineArgs(String[] args, StreamingEventProcessor instance) {
+    private static void validateCommandlineArgs(String[] args, StreamingEventsTopology instance) {
         final CmdLineParser parser = new CmdLineParser(instance);
         try {
             parser.parseArgument(args);

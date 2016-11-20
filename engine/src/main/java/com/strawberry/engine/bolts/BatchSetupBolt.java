@@ -40,9 +40,8 @@ public class BatchSetupBolt extends BaseRichBolt {
                     StrawberryConfigHolder.getMongoTemplateForBatch().createCollection(topic, options);
                 }
                 StrawberryConfigHolder.getMongoTemplateForBatch().save(doc, topic);
-            } else {
-                outputCollector.emit(tuple, new Values(doc, eventStreamConfig));
             }
+            outputCollector.emit(tuple, new Values(doc, eventStreamConfig));
             outputCollector.ack(tuple);
         } catch (Exception ex) {
             outputCollector.reportError(ex);

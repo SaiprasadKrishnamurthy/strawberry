@@ -30,6 +30,7 @@ public class RepositoryActor extends UntypedActor {
             Query query = new Query();
             query.addCriteria(Criteria.where("configId").is(config.getConfigId()));
             mongoTemplate.remove(query, EventStreamConfig.class);
+            System.out.println(mongoTemplate.getConverter());
             mongoTemplate.save(message);
             getSender().tell(message, getSelf());
         } else if (message instanceof Class) {

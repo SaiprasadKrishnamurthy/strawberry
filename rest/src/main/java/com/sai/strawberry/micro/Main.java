@@ -8,8 +8,10 @@ import com.sai.strawberry.micro.config.AppProperties;
 import com.sai.strawberry.micro.es.ESFacade;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.scheduling.annotation.EnableAsync;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -45,6 +49,9 @@ public class Main {
     @Inject
     private AppProperties appProperties;
 
+    @Inject
+    private ApplicationContext applicationContext;
+
     private ActorSystem actorSystem() {
         return ActorSystem.create("RtsActorSystem");
     }
@@ -55,8 +62,8 @@ public class Main {
     }
 
     @Bean
-    public ActorFactory actorFactory() throws Exception {
-        return new ActorFactory(actorSystem(), appProperties, kafkaProducer(), esinit(), mongoTemplate());
+    public ActorFactory actorFactory(@Autowired final MongoTemplate mongoTemplate) throws Exception {
+        return new ActorFactory(actorSystem(), appProperties, kafkaProducer(), esinit(), mongoTemplate);
     }
 
     @Bean
@@ -65,10 +72,22 @@ public class Main {
     }
 
     @Bean
-    public MongoTemplate mongoTemplate() {
+    public MongoTemplate mongoTemplate(@Autowired final MongoDbFactory mongoDbFactory, @Autowired MappingMongoConverter mappingMongoConverter) {
+        MongoTemplate mongoTemplate = new MongoTemplate(mongoDbFactory, mappingMongoConverter);
+        return mongoTemplate;
+    }
+
+    @Bean
+    public MongoDbFactory getMongoDbFactory() {
         MongoClient mongoClient = new MongoClient(appProperties.getMongoHost(), appProperties.getMongoPort());
-        MongoDbFactory mongoDbFactory = new SimpleMongoDbFactory(mongoClient, appProperties.getMongoDb());
-        return new MongoTemplate(mongoDbFactory);
+        return new SimpleMongoDbFactory(mongoClient, appProperties.getMongoDb());
+    }
+
+    @Bean
+    public MappingMongoConverter mappingMongoConvertor(@Autowired MongoDbFactory mongoDbFactory) {
+        MappingMongoConverter mappingMongoConverter = new MappingMongoConverter(mongoDbFactory, new MongoMappingContext());
+        mappingMongoConverter.setMapKeyDotReplacement("##");
+        return mappingMongoConverter;
     }
 
     @Bean
@@ -122,6 +141,7 @@ public class Main {
                 .main(Main.class) //
                 .registerShutdownHook(true)
                 .run(args);
+        System.out.println(" ------------- " + application);
     }
 
 

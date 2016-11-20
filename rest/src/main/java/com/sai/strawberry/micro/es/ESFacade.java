@@ -57,7 +57,7 @@ public class ESFacade {
                 for (Map.Entry<String, Map<String, Object>> entry : watchQueries.entrySet()) {
                     percolateDoc.put("query", entry.getValue());
                     percolateDoc.put("queryName", entry.getKey());
-                    restTemplate.postForObject(appProperties.getEsUrl() + "/" + config.getConfigId() + "/.percolator/" + id, JSONSERIALIZER.writeValueAsString(percolateDoc), Object.class, Collections.emptyMap());
+                    restTemplate.postForObject(appProperties.getEsUrl() + "/" + config.getConfigId() + "/.percolator/" + id, JSONSERIALIZER.writeValueAsString(percolateDoc).replace("##","."), Object.class, Collections.emptyMap());
                     id++;
                 }
             }

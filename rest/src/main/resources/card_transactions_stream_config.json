@@ -1,0 +1,101 @@
+{
+  "configId": "card-transactions-stream",
+  "durableNotification": false,
+  "documentIdField": "transactionId",
+  "watchQueries": {
+    "transaction_location_anomalies": {
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "query": {
+                "filtered": {
+                  "filter": {
+                    "geo_distance": {
+                      "distance": "1000km",
+                      "distance_type": "plane",
+                      "userLocation": {
+                        "lat": 21.145800,
+                        "lon": 79.088155
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "query": {
+                "filtered": {
+                  "filter": {
+                    "geo_distance_range": {
+                      "gte": "1000km",
+                      "transactionLocation": {
+                        "lat": 21.145800,
+                        "lon": 79.088155
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "indexDefinition": {
+    "properties": {
+      "timestamp": {
+        "type": "date"
+      },
+      "transactionId": {
+        "type": "string"
+      },
+      "cardNumber": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "cardHolderNationality": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "userLocation": {
+        "type": "geo_point"
+      },
+      "transactionLocation": {
+        "type": "geo_point"
+      },
+      "transactionLocationRaw": {
+        "type": "string"
+      },
+      "bank": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "amount": {
+        "type": "long"
+      },
+      "_custom": {
+        "type": "nested",
+        "properties": {
+          "anomaly": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "persistEvent": true,
+  "enableVisualization": true,
+  "batchQueryConfig": {
+    "maxNumberOfDocs": 1000000,
+    "maxBatchSizeInBytes": 2147483647
+  }
+}

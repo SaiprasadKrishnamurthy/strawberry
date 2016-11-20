@@ -42,6 +42,7 @@ public class ESIndexBolt extends BaseRichBolt {
                     lock.lock();
                     Bulk.Builder bulkBuilder = new Bulk.Builder();
                     for (Map payloadDoc : payloadsTobeIndexedToEs) {
+                        System.out.println("\t\t "+payloadDoc);
                         Index index = new Index.Builder(payloadDoc).index(payloadDoc.get("__configId__").toString()).type(payloadDoc.get("__configId__").toString()).id(payloadDoc.get("__naturalId__").toString()).build();
                         bulkBuilder.addAction(index);
                     }

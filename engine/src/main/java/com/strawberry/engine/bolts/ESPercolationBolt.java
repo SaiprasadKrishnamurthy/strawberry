@@ -46,6 +46,7 @@ public class ESPercolationBolt extends BaseRichBolt {
             Map percolationResponse = rt.postForObject(StrawberryConfigHolder.getEsUrl() + "/" + topic + "/" + topic + "/_percolate", mapper.writeValueAsString(docTobePercolated), Map.class, Collections.emptyMap());
             List<Map> matches = (List<Map>) percolationResponse.get("matches");
 
+            System.out.println("\t\t Percolation matches: "+matches);
             // Get the individual matched query
             for (Map matchedQuery : matches) {
                 String queryId = matchedQuery.get("_id").toString();
