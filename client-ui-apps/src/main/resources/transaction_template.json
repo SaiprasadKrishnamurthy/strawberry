@@ -1,0 +1,16 @@
+{
+  "transactionId": "$$txnId",
+  "cardNumber": "$$cardNo",
+  "userLocation": [
+    $$userLat,
+    $$userLong
+  ],
+  "transactionLocation": [
+    $$txnLat,
+    $$txnLong
+  ],
+  "transactionLocationRaw": "",
+  "timestamp": "$$ts",
+  "bank": "$$bank",
+  "amount": $$amount
+}

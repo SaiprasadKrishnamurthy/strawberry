@@ -48,6 +48,11 @@ public class NotificationBolt extends BaseRichBolt {
                     topic.publish(docAsString);
                 }
             }
+            System.out.println("Notification ---> "+matchedQueryNames);
+            if (!matchedQueryNames.isEmpty()) {
+                doc.put("notifiedTo__", matchedQueryNames);
+                StrawberryConfigHolder.getKafkaProducer().send(new ProducerRecord<>(StrawberryConfigHolder.getEsInputTopicName(), mapper.writeValueAsString(doc)));
+            }
             outputCollector.emit(tuple, new Values(doc, matchedQueryNames, eventStreamConfig));
             outputCollector.ack(tuple);
         } catch (Exception ex) {

@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.NetworkConfig;
@@ -7,12 +8,11 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.web.client.RestTemplate;
+import spark.utils.IOUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -56,6 +56,39 @@ public class Chat {
         staticFiles.location("/public"); //index.html is served at localhost:4567 (default port)
         staticFiles.expireTime(600);
         webSocket("/chat", ChatWebSocketHandler.class);
+        final SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) - 6);
+        exception(Exception.class, (ex, rq, rs) -> ex.printStackTrace());
+        post("/txn", (rq, rs) -> {
+            System.out.println(rq.body());
+            String[] tokens = rq.body().split("&");
+            String card = tokens[0].split("=")[1];
+            String amount = tokens[1].split("=")[1];
+            String billingAddress = tokens[2].split("=")[1];
+            String txnLoc = tokens[3].split("=")[1];
+            String bank = tokens[4].split("=")[1];
+            String txnId = UUID.randomUUID().toString();
+            String userLocLong = billingAddress.split("%2C")[1];
+            String userLocLat = billingAddress.split("%2C")[0];
+
+            String txnLocLong = txnLoc.split("%2C")[1];
+            String txnLocLat = txnLoc.split("%2C")[0];
+
+            String txnTemplate = IOUtils.toString(Chat.class.getClassLoader().getResourceAsStream("transaction_template.json"));
+            txnTemplate = txnTemplate.replace("$$txnId", txnId).replace("$$cardNo", card).replace("$$userLat", userLocLat)
+                    .replace("$$userLong", userLocLong)
+                    .replace("$$txnLat", txnLocLat)
+                    .replace("$$txnLong", txnLocLong)
+                    .replace("$$ts", f.format(cal.getTime()))
+                    .replace("$$bank", bank)
+                    .replace("$$amount", amount);
+            System.out.println(txnTemplate);
+
+            rt.postForObject("http://localhost:9090/eventstream/card-txns", new ObjectMapper().readValue(txnTemplate, Map.class), Map.class);
+            rs.redirect("test.html");
+            return rs;
+        });
         init();
     }
 
@@ -75,7 +108,7 @@ public class Chat {
     }
 
     public static void publish(String topic, String message) {
-        System.out.println("Publish called: "+topic);
+        System.out.println("Publish called: " + topic);
         sessionsToTopicsMap.entrySet()
                 .stream()
                 .filter(kv -> kv.getKey().isOpen())
@@ -84,7 +117,7 @@ public class Chat {
                     if (topics.contains(topic)) {
                         try {
                             entry.getKey().getRemote().sendString(String.valueOf(new JSONObject()
-                                    .put("userMessage", createHtmlMessageFromSender("["+ topic + "]  ", message))
+                                    .put("userMessage", createHtmlMessageFromSender("[" + topic + "]  ", message))
                                     .put("userlist", topics)
                             ));
                         } catch (IOException e) {

@@ -1,5 +1,5 @@
 {
-  "configId": "card-transactions-stream",
+  "configId": "card-txns",
   "durableNotification": false,
   "documentIdField": "transactionId",
   "watchQueries": {
