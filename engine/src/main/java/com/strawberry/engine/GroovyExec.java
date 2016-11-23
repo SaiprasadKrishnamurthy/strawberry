@@ -1,5 +1,6 @@
 package com.strawberry.engine;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 /**
@@ -8,8 +9,10 @@ import groovy.lang.GroovyShell;
 public class GroovyExec {
 
     public static void main(String[] args) {
-        GroovyShell shell = new GroovyShell();
-        String script = "return 'hello world'";
+        Binding binding = new Binding();
+        binding.setVariable("input", 2);
+        GroovyShell shell = new GroovyShell(binding);
+        String script = "return 'hello world'+input";
         Object result = shell.evaluate(script);
         System.out.println(result);
     }

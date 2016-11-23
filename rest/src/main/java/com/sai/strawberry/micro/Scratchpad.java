@@ -1,16 +1,25 @@
 package com.sai.strawberry.micro;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.sai.strawberry.api.EventStreamConfig;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.Map;
 import java.util.Properties;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Created by saipkri on 17/11/16.
@@ -59,17 +68,21 @@ public class Scratchpad {
     }*/
 
 
-        FileInputStream fis = new FileInputStream(new File("/Users/saipkri/learning/strawberry/rest/src/main/resources/data.json"));
-        String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
-        System.out.println("30dbd5a43ed73b8f92714b329ed93c5e");
-        System.out.println(md5);
+        String groovyScript = Files.lines(Paths.get("/Users/saipkri/learning/strawberry/rest/src/main/resources/custom.groovy")).collect(joining("\n"));
+        EventStreamConfig doc = new ObjectMapper().readValue(Scratchpad.class.getClassLoader().getResourceAsStream("card_transactions_stream_config.json"), EventStreamConfig.class);
+        doc.setCustomProcessingHookScript(groovyScript);
+
+        System.out.println(new ObjectMapper().writeValueAsString(doc));
+
+       /* Binding binding = new Binding();
+        binding.setVariable("config", doc);
+        binding.setVariable("jsonIn", doc);
+        GroovyShell shell = new GroovyShell(binding);
+        Map returnDoc = (Map) shell.evaluate(doc.getCustomProcessingHookScript());
+        System.out.println(returnDoc);*/
 
 
-        Properties p = new Properties();
-        p.load(new FileInputStream("/Users/saipkri/learning/strawberry/rest/src/main/resources/application.properties"));
-        System.out.println(p.get("reports.common.CSVEncoder"));
 
-        System.out.println("Default Charset=" + Charset.defaultCharset());
 
     }
 

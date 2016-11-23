@@ -14,6 +14,7 @@ public class EventStreamConfig {
     private String documentIdField;
     private boolean cacheEnabled;
     private String customProcessingHookClassName;
+    private String customProcessingHookScript;
     private boolean durableNotification;
     private Map<String, Object> indexDefinition;
     private Map<String, Map<String, Object>> watchQueries;

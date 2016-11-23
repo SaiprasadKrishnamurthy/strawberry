@@ -53,6 +53,7 @@ public class StreamingEventsTopology {
         builder.setBolt("CustomProcessorHooksBolt", new CustomProcessorHooksBolt(), parallelism).shuffleGrouping("BatchSetupBolt");
         builder.setBolt("CacheHandlerBolt", new CacheHandlerBolt(), parallelism).shuffleGrouping("CustomProcessorHooksBolt");
         builder.setBolt("ESPercolationBolt", new ESPercolationBolt(), parallelism).shuffleGrouping("CustomProcessorHooksBolt");
+        builder.setBolt("KibanaSetupBolt", new KibanaSetupBolt(), parallelism).shuffleGrouping("CustomProcessorHooksBolt");
         builder.setBolt("NotificationBolt", new NotificationBolt(), parallelism).shuffleGrouping("ESPercolationBolt");
 
         // Spout that listens from ES input and indexes the data to ES.

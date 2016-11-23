@@ -41,6 +41,13 @@
           ]
         }
       }
+    },
+    "transaction_amount_anomalies": {
+      "query": {
+        "match": {
+          "custom__": true
+        }
+      }
     }
   },
   "indexDefinition": {
@@ -75,20 +82,8 @@
       "amount": {
         "type": "long"
       },
-      "_custom": {
-        "type": "nested",
-        "properties": {
-          "anomaly": {
-            "type": "boolean"
-          },
-          "code": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "description": {
-            "type": "string"
-          }
-        }
+      "custom__": {
+        "type": "boolean"
       }
     }
   },

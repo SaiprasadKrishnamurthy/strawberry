@@ -34,6 +34,8 @@ public class NotificationBolt extends BaseRichBolt {
         try {
             ObjectMapper mapper = StrawberryConfigHolder.getJsonParser();
             Map doc = (Map) tuple.getValueByField("doc");
+
+            System.out.println("****** Doc: " + doc);
             String docAsString = mapper.writeValueAsString(doc);
             EventStreamConfig eventStreamConfig = (EventStreamConfig) tuple.getValueByField("eventStreamConfig");
 
@@ -48,7 +50,7 @@ public class NotificationBolt extends BaseRichBolt {
                     topic.publish(docAsString);
                 }
             }
-            System.out.println("Notification ---> "+matchedQueryNames);
+            System.out.println("Notification ---> " + matchedQueryNames);
             if (!matchedQueryNames.isEmpty()) {
                 doc.put("notifiedTo__", matchedQueryNames);
                 StrawberryConfigHolder.getKafkaProducer().send(new ProducerRecord<>(StrawberryConfigHolder.getEsInputTopicName(), mapper.writeValueAsString(doc)));
