@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>
+        User Management with AngularJS / Java Spark REST Service
+    </title>
+    <!-- Load AngularJS -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript">
+            var app = angular.module("UserManagement", []);
+
+            //Controller Part
+            app.controller("UserManagementController", function($scope, $http) {
+
+                //Initialize page with default data which is blank in this example
+                $scope.users = [];
+                $scope.form = {
+                    id : -1,
+                    name : "",
+                    email : ""
+                };
+
+                //HTTP POST/PUT methods for add/edit employee
+                $scope.submitEmployee = function($event) {
+
+                    var method = "";
+                    var url = "";
+                    if ($scope.form.id == -1) {
+                        //Id is absent so add employee - POST operation
+                        method = "POST";
+                        url = '/users';
+                    } else {
+                        //If Id is present, it's edit operation - PUT operation
+                        method = "POST";
+                        url = 'users/' + $scope.form.id;
+                    }
+
+                    $http({
+                        method : method,
+                        url : url,
+                        data : angular.toJson($scope.form),
+                        headers : {
+                            'Content-Type' : 'application/json'
+                        }
+                    }).then( _success, _error );
+                };
+
+                //HTTP DELETE- delete employee by Id
+                $scope.removeEmployee = function(employee) {
+                    $http({
+                        method : 'DELETE',
+                        url : 'users/' + employee.id
+                    }).then(_success, _error);
+                };
+
+                //In case of edit employee, populate form with employee data
+                $scope.editEmployee = function(employee) {
+                    $scope.form.name = employee.name;
+                    $scope.form.email = employee.email;
+                    $scope.form.id = employee.id;
+                };
+
+                /* Private Methods */
+                //HTTP GET- get all users collection
+                function _refreshPageData() {
+                    $http({
+                        method : 'GET',
+                        url : 'users'
+                    }).then(function successCallback(response) {
+                        $scope.users = response.data;
+
+                    }, function errorCallback(response) {
+                        console.log(response.statusText);
+                    });
+                }
+
+                function _success(response) {
+                    alert("REsponse after post");
+                    _refreshPageData();
+                    _clearForm()
+                }
+
+                function _error(response) {
+                    console.log(response.statusText);
+                }
+
+                //Clear the form
+                function _clearForm() {
+                    $scope.form.name = "";
+                    $scope.form.email = "";
+                    $scope.form.id = -1;
+                };
+            });
+        </script>
+    <style>
+            .button {
+                cursor: pointer;
+                color: blue;
+            }
+            td,th{
+                border: 1px solid gray;
+                width: 25%;
+                text-align: left;
+            }
+            table {
+                width: 600px;
+            }
+        </style>
+</head>
+<body ng-app="UserManagement" ng-controller="UserManagementController">
+<h1>
+    User Management with AngularJS / Java Spark REST Service
+</h1>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+
+    <tr ng-repeat="employee in users">
+        <td>{{ employee.name }}</td>
+        <td>{{ employee.email }}</td>
+        <td><a ng-click="editEmployee( employee )" class="button">Edit</a> | <a ng-click="removeEmployee( employee )" class="button">Remove</a></td>
+    </tr>
+
+</table>
+
+<h2>Add/Edit Employee</h2>
+
+<form ng-submit="submitEmployee()">
+    <table>
+        <tr>
+            <td>Name</td>
+            <td><input type="text" ng-model="form.name" size="60" /></td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td><input type="text" ng-model="form.email" size="60" /></td>
+        </tr>
+        <tr>
+            <td colspan="2"><input type="submit" value="Submit" /></td>
+        </tr>
+    </table>
+</form>
+
+</body>
+</html>
